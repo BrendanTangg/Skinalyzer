@@ -93,14 +93,14 @@ with FaceLandmarker.create_from_options(options) as landmarker:
             right_cheek_y += cheek_y_offset
 
             # Move forehead region slightly downward
-            forehead_y_offset = int(face_height * 0.08)
+            forehead_y_offset = int(face_height * 0.04)
             forehead_y += forehead_y_offset
 
             cheek_width = int(face_width * 0.12)
             cheek_height = int(face_height * 0.15)
 
             # Forehead region size
-            forehead_width = int(face_width * 0.18)
+            forehead_width = int(face_width * 0.32)
             forehead_height = int(face_height * 0.08)
 
             # Left cheek boundaries
@@ -153,25 +153,29 @@ with FaceLandmarker.create_from_options(options) as landmarker:
                 2
             )
 
-            if left_cheek.size > 0 and right_cheek.size > 0:
-                # Convert cheeks to grayscale
+            if left_cheek.size > 0 and right_cheek.size > 0 and forehead.size > 0:
+                # Convert skin regions to grayscale
                 left_gray = cv2.cvtColor(left_cheek, cv2.COLOR_BGR2GRAY)
                 right_gray = cv2.cvtColor(right_cheek, cv2.COLOR_BGR2GRAY)
+                forehead_gray = cv2.cvtColor(forehead, cv2.COLOR_BGR2GRAY)
 
                 # Reduce camera noise
                 left_gray = cv2.GaussianBlur(left_gray, (3, 3), 0)
                 right_gray = cv2.GaussianBlur(right_gray, (3, 3), 0)
+                forehead_gray = cv2.GaussianBlur(forehead_gray, (3, 3), 0)
 
                 # Calculate Laplacian
                 left_laplacian = cv2.Laplacian(left_gray, cv2.CV_64F)
                 right_laplacian = cv2.Laplacian(right_gray, cv2.CV_64F)
+                forehead_laplacian = cv2.Laplacian(forehead_gray, cv2.CV_64F)
 
                 # Calculate texture scores
                 left_texture = left_laplacian.var()
                 right_texture = right_laplacian.var()
+                forehead_texture = forehead_laplacian.var()
 
                 # Average the two cheeks
-                texture_score = (left_texture + right_texture) / 2
+                texture_score = (left_texture + right_texture + forehead_texture) / 3
 
                 cv2.putText(
                     frame,
@@ -195,8 +199,18 @@ with FaceLandmarker.create_from_options(options) as landmarker:
 
                 cv2.putText(
                     frame,
-                    f"Average: {texture_score:.1f}",
+                    f"Forehead: {forehead_texture:.1f}",
                     (20, 100),
+                    cv2.FONT_HERSHEY_SIMPLEX,
+                    0.7,
+                    (255, 0, 0),
+                    2
+                )
+
+                cv2.putText(
+                    frame,
+                    f"Average: {texture_score:.1f}",
+                    (20, 130),
                     cv2.FONT_HERSHEY_SIMPLEX,
                     0.7,
                     (255, 0, 0),
