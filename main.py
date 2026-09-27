@@ -3,6 +3,18 @@ import mediapipe as mp
 from mediapipe.tasks import python
 from mediapipe.tasks.python import vision
 import time
+import os
+from dotenv import load_dotenv
+
+# Load environment variables from .env
+load_dotenv()
+
+PERFECT_CORP_API_KEY = os.getenv("PERFECT_CORP_API_KEY")
+PERFECT_CORP_SECRET_KEY = os.getenv("PERFECT_CORP_SECRET_KEY")
+
+# Check that the keys loaded without displaying them
+print("API key loaded:", PERFECT_CORP_API_KEY is not None)
+print("Secret key loaded:", PERFECT_CORP_SECRET_KEY is not None)
 
 model_path = 'models/face_landmarker.task'
 
